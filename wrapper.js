@@ -40,10 +40,20 @@ var main = function (args) {
 	}
 	LINT.path = path.join(__dirname, LINT.source.vsn + "-" + LINT.filename);
 
-	var verbose = false;
+	var verbose = false,
+		noErrors  = false,
+		noWarnings= false;
 	if (opts.verbose) {
 		delete opts.verbose;
 		verbose = true;
+	}
+	if (opts.noerrors) {
+		delete opts.noerrors;
+		noErrors= true;
+	}
+	if (opts.nowarnings) {
+		delete opts.nowarnings;
+		noWarnings= true;
 	}
 	if (opts.help || args.length === 0) {
 		var readme = fs.readFileSync(path.join(__dirname, "README"), "utf-8");
@@ -101,7 +111,7 @@ var main = function (args) {
 	for (i = 0; i < anon.length; i += 1) {
 		var filepath = anon[i];
 		var err = doLint(filepath);
-		err = formatOutput(err, filepath);
+		err = formatOutput(err, filepath, {noErrors:noErrors, noWarnings:noWarnings});
 		errors = errors.concat(err);
 	}
 	var pass = errors.length === 0;
@@ -137,22 +147,23 @@ getJSLint = function (callback) {
 	});
 };
 
-formatOutput = function (errors, filepath) {
+formatOutput = function (errors, filepath, opts) {
 	var lines = [],
-        WARN = 'WARN',
-        ERR  = 'ERROR',
 	    i;
 	for (i = 0; i < errors.length; i += 1) {
 		var error = errors[i],
-            errorType = WARN,
             nextError = i < errors.length ? errors[i + 1] : null;
 
         if (error && error.reason && error.reason.match(/^Stopping/) === null) {
             // If jslint stops next, this was an actual error
             if (nextError && nextError.reason && nextError.reason.match(/^Stopping/) !== null) {
-                errorType = ERR;
+                !opts.noErrors && 
+                    lines.push([filepath,error.line, error.character, 'ERROR', error.reason].join(":"));
             }
-            lines.push([error.line, error.character, errorType, error.reason].join(":"));
+            else{
+                !opts.noWarnings && 
+                    lines.push([filepath,error.line, error.character, 'WARNING', error.reason].join(":"));
+            }
         }
 	}
 	return lines;
