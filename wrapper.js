@@ -122,7 +122,6 @@ getJSLint = function (callback) {
 		host: LINT.source.host,
 		path: LINT.source.path + LINT.source.vsn + "/" + LINT.source.filename
 	};
-    util.print(JSON.stringify(options));
 	https.get(options, function (response) {
 		if (response.statusCode !== 200) {
 			exit(false, "failed to retrieve JSLint file");
