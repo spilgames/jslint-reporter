@@ -17,7 +17,7 @@ var LINT = {
 		host: "raw.github.com",
         vsn : "1.0.0",
         filename : "jslint.js",
-		path: "/spil-sascha/JSLint/"
+		path: "/spilgames/JSLint/"
 	}
 };
 
